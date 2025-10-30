@@ -156,7 +156,7 @@ class EmailService {
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($to);
             $this->mailer->Subject = 'Welcome to Alma101!';
-            $loginUrl = 'https://your-domain.com/auth'; // Update with your domain
+            $loginUrl = 'https://alma101-cybersecurity.vercel.app/auth'; // Update with your domain
             $this->mailer->Body = $this->getEmailTemplate('welcome', [
                 'username' => $username,
                 'loginUrl' => $loginUrl
