@@ -1,0 +1,31 @@
+# Render manifest: defines two services (frontend static and backend web service)
+services:
+  - type: web
+    name: alma101-frontend
+    root: .
+    env: docker
+    plan: free
+    dockerfilePath: docker/frontend/Dockerfile
+    buildCommand: npm ci && npm run build
+    startCommand: nginx -g 'daemon off;'
+    envVars:
+      - key: VITE_BASE_PATH
+        value: /Alma101-Cybersecurity/ # adjust if deploying to repo subpath
+
+  - type: web
+    name: alma101-backend
+    root: .
+    env: docker
+    plan: free
+    dockerfilePath: docker/backend/Dockerfile
+    buildCommand: composer install --no-dev --no-interaction --prefer-dist -o
+    startCommand: apache2-foreground
+    envVars:
+      - key: SUPABASE_URL
+        scope: PRIVATE
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        scope: PRIVATE
+      - key: SUPABASE_ANON_KEY
+        scope: PRIVATE
+      - key: SENDGRID_API_KEY
+        scope: PRIVATE
