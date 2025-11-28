@@ -36,3 +36,6 @@ pids
 *.seed
 *.pid.lock
 backend/.env
+
+# Local env for backend
+backend/.env

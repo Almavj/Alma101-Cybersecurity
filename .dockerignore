@@ -1,0 +1,10 @@
+.git/
+.gitignore
+README.md
+*.md
+.dockerignore
+node_modules/
+dist/
+.env
+backend/vendor/
+backend/.env
