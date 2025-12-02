@@ -1,41 +1,36 @@
 # Dependencies
-backend/vendor/
-node_modules/
+/vendor/
+/node_modules/
 
 # Environment files
 .env
 .env.local
-.env.production
-.env.development
+.env.backup
+.env*.local
 
-# Logs
-*.log
-logs/
+# Composer
+composer.lock
 
-# Cache
-.cache/
-dist/
-build/
+# Test files
+test_*.php
+quick_test.php
+*test*.php
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Composer
-composer.lock
+# OS
+.DS_Store
+Thumbs.db
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-backend/.env
+# Logs
+*.log
+logs/
 
-# Local env for backend
-backend/.env
+# Docker (if applicable)
+docker-compose.override.yml
+backend/vendor/
+dist/

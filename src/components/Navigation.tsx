@@ -28,9 +28,9 @@ export const Navigation = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-primary/30 shadow-lg">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <>
+      <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-primary/30 shadow-lg h-16">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 group">
               <img src="/images/Alma101.png" alt="Alma101 logo" className="h-10 w-10 object-contain group-hover:drop-shadow-[0_0_12px_hsl(var(--cyber-glow))] transition-all" />
               <div className="flex flex-col">
@@ -111,7 +111,10 @@ export const Navigation = () => {
             )}
           </div>
         )}
-      </div>
-    </nav>
+      </nav>
+
+      {/* spacer so fixed header doesn't overlap page content */}
+      <div aria-hidden="true" className="h-16 w-full" />
+    </>
   );
 };

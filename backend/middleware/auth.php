@@ -111,11 +111,56 @@ function getAuthenticatedUser() {
  */
 function authenticateAdmin() {
     $user = getAuthenticatedUser();
-    $adminEmail = $_ENV['SUPABASE_ADMIN_EMAIL'] ?? 'machariaallan881@gmail.com';
-    if (!isset($user['email']) || strtolower($user['email']) !== strtolower($adminEmail)) {
+    if (!isUserAdminFromUser($user)) {
         http_response_code(403);
         echo json_encode(['message' => 'Forbidden: admin only']);
         exit();
     }
     return $user['id'] ?? null;
+}
+
+/**
+ * Determine whether a user object (as returned from /auth/v1/user) represents an admin.
+ * This is flexible: it checks several common locations for a role claim (top-level 'role',
+ * 'app_metadata' and 'user_metadata') and falls back to comparing email against
+ * SUPABASE_ADMIN_EMAIL for backward compatibility.
+ */
+function isUserAdminFromUser(array $user): bool {
+    $adminEmail = $_ENV['SUPABASE_ADMIN_EMAIL'] ?? '';
+
+    // 1) top-level role claim (some JWTs place role here)
+    if (isset($user['role']) && strcasecmp($user['role'], 'admin') === 0) {
+        return true;
+    }
+
+    // 2) app_metadata.role or app_metadata.roles
+    if (isset($user['app_metadata'])) {
+        if (isset($user['app_metadata']['role']) && strcasecmp($user['app_metadata']['role'], 'admin') === 0) {
+            return true;
+        }
+        if (isset($user['app_metadata']['roles'])) {
+            $roles = $user['app_metadata']['roles'];
+            if (is_array($roles) && in_array('admin', array_map('strtolower', $roles))) return true;
+            if (is_string($roles) && strcasecmp($roles, 'admin') === 0) return true;
+        }
+    }
+
+    // 3) user_metadata.role or user_metadata.roles
+    if (isset($user['user_metadata'])) {
+        if (isset($user['user_metadata']['role']) && strcasecmp($user['user_metadata']['role'], 'admin') === 0) {
+            return true;
+        }
+        if (isset($user['user_metadata']['roles'])) {
+            $roles = $user['user_metadata']['roles'];
+            if (is_array($roles) && in_array('admin', array_map('strtolower', $roles))) return true;
+            if (is_string($roles) && strcasecmp($roles, 'admin') === 0) return true;
+        }
+    }
+
+    // 4) legacy fallback: compare email
+    if (!empty($adminEmail) && isset($user['email']) && strcasecmp($user['email'], $adminEmail) === 0) {
+        return true;
+    }
+
+    return false;
 }

@@ -40,8 +40,9 @@ class Tool {
     }
 
     public function getById(string $id) {
+        if (!$this->isValidId($id)) return null;
         try {
-            $resp = $this->client->get('/rest/v1/tools?id=eq.' . $id, [
+            $resp = $this->client->get('/rest/v1/tools?id=eq.' . urlencode($id), [
                 'headers' => ['Accept' => 'application/json']
             ]);
             $data = json_decode((string)$resp->getBody(), true);
@@ -52,8 +53,9 @@ class Tool {
     }
 
     public function update(string $id, array $data) {
+        if (!$this->isValidId($id)) return false;
         try {
-            $resp = $this->client->patch('/rest/v1/tools?id=eq.' . $id, [
+            $resp = $this->client->patch('/rest/v1/tools?id=eq.' . urlencode($id), [
                 'json' => $data,
                 'headers' => ['Prefer' => 'return=representation']
             ]);
@@ -64,11 +66,18 @@ class Tool {
     }
 
     public function delete(string $id) {
+        if (!$this->isValidId($id)) return false;
         try {
-            $resp = $this->client->delete('/rest/v1/tools?id=eq.' . $id);
+            $resp = $this->client->delete('/rest/v1/tools?id=eq.' . urlencode($id));
             return $resp->getStatusCode() >= 200 && $resp->getStatusCode() < 300;
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    private function isValidId(string $id): bool {
+        if (ctype_digit($id)) return true;
+        if (preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $id)) return true;
+        return false;
     }
 }

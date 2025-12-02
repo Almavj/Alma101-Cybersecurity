@@ -26,7 +26,7 @@ class EmailService {
         $user = $_ENV['EMAIL_SMTP_USER'] ?? $this->fromEmail;
         $pass = $_ENV['EMAIL_SMTP_PASS'] ?? '';
         $port = isset($_ENV['EMAIL_SMTP_PORT']) ? (int)$_ENV['EMAIL_SMTP_PORT'] : 587;
-        $secure = $_ENV['EMAIL_SMTP_SECURE'] ?? 'tls'; // tls, ssl, or empty
+        $secure = $_ENV['EMAIL_SMTP_SECURE'] ?? 'tls'; // tls, ssl, or leave empty for none
 
         $this->mailer->Host = $host;
         $this->mailer->SMTPAuth = true;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,42 @@ const Videos = () => {
   // video player dialog
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [playerLoading, setPlayerLoading] = useState(false);
+
+  // When player dialog opens, try to autoplay the video and show loading state.
+  useEffect(() => {
+    if (playerOpen && playerUrl) {
+      // Delay slightly to ensure the video element is mounted
+      const t = setTimeout(() => {
+        const v = videoRef.current;
+        if (!v) return;
+        // Set loading until the video fires loaded events
+        setPlayerLoading(true);
+        // Attempt to play (may be blocked by autoplay policies)
+        v.play().catch(() => {});
+      }, 120);
+      return () => clearTimeout(t);
+    } else {
+      setPlayerLoading(false);
+    }
+  }, [playerOpen, playerUrl]);
+
+  const handleVideoClick = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    // Request fullscreen with vendor fallbacks
+    const elem: any = v;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(() => {});
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  };
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -132,6 +168,18 @@ const Videos = () => {
       <main className="container mx-auto px-4 pt-24 pb-12">
         {adminMode && (
           <section className="max-w-3xl mx-auto mb-8 p-4 bg-card/60 rounded-md border border-primary/20">
+            <div className="relative">
+              {uploadLoading && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 rounded-md">
+                  <div className="text-center">
+                    <svg className="animate-spin h-10 w-10 mx-auto text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <div className="mt-2 text-white">Uploading…</div>
+                  </div>
+                </div>
+              )}
             <h2 className="text-lg font-semibold text-foreground mb-2">Admin: Upload Video</h2>
             <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <input id="video-title" name="title" className="p-2 bg-input text-foreground rounded" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -155,6 +203,7 @@ const Videos = () => {
                 )}
               </button>
             </form>
+            </div>
           </section>
         )}
         <div className="text-center mb-12">
@@ -173,7 +222,28 @@ const Videos = () => {
             <DialogDescription>
               <div className="mt-4">
                 {playerUrl ? (
-                  <video src={playerUrl} controls autoPlay className="w-full h-auto bg-black" />
+                  <div className="relative">
+                    <video
+                      ref={videoRef}
+                      src={playerUrl}
+                      controls
+                      autoPlay
+                      className="w-full h-auto bg-black cursor-pointer"
+                      onClick={handleVideoClick}
+                      onLoadedData={() => setPlayerLoading(false)}
+                      onCanPlay={() => setPlayerLoading(false)}
+                      onWaiting={() => setPlayerLoading(true)}
+                      onPlaying={() => setPlayerLoading(false)}
+                    />
+                    {playerLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                        <svg className="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-center text-muted-foreground">No video selected</div>
                 )}

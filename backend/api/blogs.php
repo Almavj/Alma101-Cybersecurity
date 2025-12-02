@@ -1,19 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
-// Handle preflight OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-require_once '../config/database.php';
-require_once '../models/Blog.php';
-require_once '../middleware/auth.php';
+require_once __DIR__ . '/../middleware/security.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/Blog.php';
+require_once __DIR__ . '/../middleware/auth.php';
 
 $database = new Database();
 $blog = new Blog($database);
@@ -41,9 +30,10 @@ switch($method) {
         break;
 
     case 'POST':
-        $userId = authenticate();
+        // only admin can create
+        $adminId = authenticateAdmin();
         $data = json_decode(file_get_contents("php://input"), true);
-        $data['author_id'] = $userId;
+        $data['author_id'] = $adminId;
         
         if($blog->create($data)) {
             http_response_code(201);
@@ -55,7 +45,7 @@ switch($method) {
         break;
 
     case 'PUT':
-        $userId = authenticate();
+        $adminId = authenticateAdmin();
         $data = json_decode(file_get_contents("php://input"), true);
         
         if(isset($_GET['id'])) {
@@ -73,7 +63,7 @@ switch($method) {
         break;
 
     case 'DELETE':
-        $userId = authenticate();
+        $adminId = authenticateAdmin();
         
         if(isset($_GET['id'])) {
             if($blog->delete($_GET['id'])) {

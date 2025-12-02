@@ -45,7 +45,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    const location = useLocation();
     return <Navigate to="/auth" replace state={{ from: location }} />;
   }
 

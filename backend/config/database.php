@@ -13,7 +13,15 @@ $required = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ANON_KEY'];
 $missing = [];
 foreach ($required as $key) {
     $val = getenv($key) ?: ($_ENV[$key] ?? null);
-    if (empty($val)) $missing[] = $key;
+    // Treat obvious placeholder/example values as "missing" so a real secret must be provided
+    $isPlaceholder = false;
+    if ($key === 'SUPABASE_SERVICE_ROLE_KEY' && is_string($val)) {
+        $lower = strtolower($val);
+        if (strpos($lower, 'replace_with') !== false || strpos($lower, 'your_service_role') !== false || strpos($lower, 'your-service-role') !== false) {
+            $isPlaceholder = true;
+        }
+    }
+    if (empty($val) || $isPlaceholder) $missing[] = $key;
 }
 if (!empty($missing)) {
     $msg = "Missing required environment variables: " . implode(', ', $missing) . ".\nPlease create a .env file at the project root (see .env.example) and restart the server.";
