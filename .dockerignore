@@ -1,3 +1,33 @@
+.git
+.gitignore
+node_modules/
+vendor/
+.env
+.env.*
+*.log
+dist/
+*.md
+.DS_Store
+npm-debug.log
+coverage/
+.cache/
+
+# Docker files
+Dockerfile
+Dockerfile.frontend
+docker-compose.yml
+
+# Development files
+.vscode/
+.idea/
+
+# Runtime data
+uploads/
+backend/logs/
+
+# Temp files
+*.tmp
+*.temp
 .git/
 .git
 .gitignore
@@ -13,10 +43,7 @@ coverage/
 .cache/
 
 # Docker files
-Dockerfile
-Dockerfile.frontend
-docker-compose.yml
-.env.docker
+.env
 
 # Development files
 .vscode/
