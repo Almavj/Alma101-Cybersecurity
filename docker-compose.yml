@@ -1,32 +1,61 @@
+version: '3.8'
 
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: docker/frontend/Dockerfile
-      args:
-        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
-        - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
-        - VITE_API_URL=${VITE_API_URL}
-    ports:
-      - "3000:80"
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    restart: always
     environment:
-      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
-      - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
-      - VITE_API_URL=${VITE_API_URL}
-    depends_on:
-      - backend
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-alma101}
+      MYSQL_USER: ${DB_USER:-alma101_user}
+      MYSQL_PASSWORD: ${DB_PASS:-alma101_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - alma-network
 
+  # PHP Backend
   backend:
     build:
       context: .
-      dockerfile: docker/backend/Dockerfile
+      dockerfile: Dockerfile
+    restart: always
     ports:
       - "8000:80"
-    volumes:
-      - ./backend:/var/www/html
-      - ./.env:/var/www/html/.env
     environment:
-      - PHP_ENV=development
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-alma101}
+      DB_USER: ${DB_USER:-alma101_user}
+      DB_PASS: ${DB_PASS:-alma101_password}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_here}
+    volumes:
+      - ./backend/uploads:/var/www/html/uploads
+      - ./backend/logs:/var/www/html/logs
+    depends_on:
+      - db
+    networks:
+      - alma-network
 
+  # phpMyAdmin (optional)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    depends_on:
+      - db
+    networks:
+      - alma-network
 
+volumes:
+  mysql_data:
+
+networks:
+  alma-network:
+    driver: bridge

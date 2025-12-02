@@ -11,3 +11,21 @@ dist/
 npm-debug.log
 coverage/
 .cache/
+
+# Docker files
+Dockerfile
+Dockerfile.frontend
+docker-compose.yml
+.env.docker
+
+# Development files
+.vscode/
+.idea/
+
+# Runtime data
+uploads/
+logs/
+
+# Temp files
+*.tmp
+*.temp
